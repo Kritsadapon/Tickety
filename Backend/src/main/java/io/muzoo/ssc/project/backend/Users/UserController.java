@@ -2,7 +2,6 @@ package io.muzoo.ssc.project.backend.Users;
 
 import io.muzoo.ssc.project.backend.SimpleResponseDTO;
 import io.muzoo.ssc.project.backend.User;
-import io.muzoo.ssc.project.backend.config.S3Config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

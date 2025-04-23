@@ -3,9 +3,6 @@ package io.muzoo.ssc.project.backend.Users;
 import io.muzoo.ssc.project.backend.User;
 import io.muzoo.ssc.project.backend.UserRepository;
 
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,8 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.rmi.ServerException;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.UUID;
 
 @Service
@@ -25,9 +20,6 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private S3Client s3Client;
 
     // Get currently authenticated user
     public User getAuthenticatedUser() {
