@@ -132,6 +132,29 @@ CREATE TABLE `tbl_comment` (
 INSERT INTO `tbl_comment` (`comment_id`, `postid`, `user_id`, `comment`, `date_time`) VALUES
 (1, 1, 1, 'First!', '2025-03-21 10:45:00');
 
+--
+-- Table structure for table `tbl_team_invitation`
+--
+
+DROP TABLE IF EXISTS `tbl_team_invitation`;
+CREATE TABLE `tbl_team_invitation` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `team_id` bigint(20) NOT NULL,
+  `invited_user_id` bigint(20) NOT NULL,
+  `inviter_id` bigint(20) NOT NULL,
+  `invitation_date` datetime NOT NULL,
+  `accepted` tinyint(1) NOT NULL DEFAULT 0,
+  `rejected` tinyint(1) NOT NULL DEFAULT 0,
+  `response_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `team_id` (`team_id`),
+  KEY `invited_user_id` (`invited_user_id`),
+  KEY `inviter_id` (`inviter_id`),
+  CONSTRAINT `fk_team_invitation_team` FOREIGN KEY (`team_id`) REFERENCES `tbl_team` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_team_invitation_invited_user` FOREIGN KEY (`invited_user_id`) REFERENCES `tbl_user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_team_invitation_inviter` FOREIGN KEY (`inviter_id`) REFERENCES `tbl_user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Restore previous settings
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

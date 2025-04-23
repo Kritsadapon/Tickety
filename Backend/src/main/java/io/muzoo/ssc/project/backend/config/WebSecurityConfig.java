@@ -41,22 +41,14 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/api/login", "/api/logout", "/api/whoami", "/api/register").permitAll() // Allow specific paths without authentication
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow OPTIONS requests
-                        // Allow public access to view forums, posts, and comments
-                        .requestMatchers(HttpMethod.GET, "/api/forums/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+
                         // Allow public access to user profile pictures
                         .requestMatchers(HttpMethod.GET, "/api/users/*/profile-picture").permitAll()
-                        // Require authentication for write operations
-                        .requestMatchers(HttpMethod.POST, "/api/forums/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/forums/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/forums/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/posts/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/posts/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/comments/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
+                        // Team endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/teams/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/teams/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/teams/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/teams/**").authenticated()
                         .anyRequest().authenticated() // Require authentication for any other path
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new JsonHttp403ForbiddenEntryPoint()))
