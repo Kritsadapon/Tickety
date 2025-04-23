@@ -5,15 +5,18 @@
     "baseUrl": "./",
     "moduleResolution": "node",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
-  }
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+  },
+  "exclude": [
+    "src/views/AboutView.vue",
+    "src/views/CreateForumView.vue",
+    "src/views/CreatePostView.vue",
+    "src/views/EditForumView.vue",
+    "src/views/ForumPageView.vue",
+    "src/views/ForumSearchView.vue",
+    "src/views/PostPageView.vue",
+    "src/views/PostSearchView.vue"
+  ]
 }
