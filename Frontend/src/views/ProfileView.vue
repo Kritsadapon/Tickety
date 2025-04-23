@@ -87,10 +87,6 @@
               </button>
             </div>
           </div>
-          <router-link to="/profile/activity" class="activity-button">
-            <font-awesome-icon :icon="['fas', 'history']" class="icon" />
-            View Activity
-          </router-link>
         </div>
         <button @click="logout" :disabled="loading" class="logout-button">
           <font-awesome-icon
@@ -649,32 +645,5 @@ export default {
 
 .notification.error {
   background-color: #f44336;
-}
-
-.activity-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #18c6c6;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  margin-top: 20px;
-  width: 100%;
-  max-width: 500px;
-}
-
-.activity-button:hover {
-  background: #15b3b3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(24, 198, 198, 0.2);
-}
-
-.activity-button .icon {
-  font-size: 1.1rem;
 }
 </style>

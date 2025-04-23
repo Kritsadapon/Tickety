@@ -1,4 +1,8 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
+import DashboardView from "../views/DashboardView.vue";
+import ProfileView from "../views/ProfileView.vue";
+import LoginView from "../views/LoginView.vue";
+import RegisterView from "../views/RegisterView.vue";
 import HomeView from "../views/HomeView.vue";
 import axios from "axios";
 import store from "@/store";
@@ -10,88 +14,56 @@ const routes = [
     component: HomeView,
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
-  },
-  {
     path: "/login",
     name: "login",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/LoginView.vue"),
+    component: LoginView,
   },
   {
     path: "/register",
     name: "register",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/RegisterView.vue"),
+    component: RegisterView,
   },
   {
-    path: "/profile",
-    name: "profile",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/ProfileView.vue"),
-  },
-  {
-    path: "/profile/activity",
-    name: "userActivity",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/UserActivityView.vue"),
-  },
-  {
-    path: "/forums/create",
-    name: "create",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/CreateForumView.vue"),
-  },
-  {
-    path: "/forums/:forumid",
-    name: "forumPageView",
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/ForumPageView.vue"),
-  },
-  {
-    path: "/forums/:forumid/create-post",
-    name: "createPost",
-    component: () => import("../views/CreatePostView.vue"),
-  },
-  {
-    path: "/posts/:postid",
-    name: "postPage",
-    component: () => import("../views/PostPageView.vue"),
-  },
-  {
-    path: "/search",
-    name: "forumSearch",
-    component: () => import("../views/ForumSearchView.vue"),
-  },
-  {
-    path: "/forums/:forumid/search",
-    name: "postSearch",
-    component: () => import("../views/PostSearchView.vue"),
-  },
-  {
-    path: "/forums/edit/:id",
-    name: "editForum",
-    component: () => import("../views/EditForumView.vue"),
+    path: "/dashboard",
+    name: "dashboard",
+    component: DashboardView,
+    children: [
+      {
+        path: "",
+        name: "dashboard-home",
+        component: () => import("../views/DashboardHomeView.vue"),
+      },
+      {
+        path: "teams",
+        name: "teams",
+        component: () => import("../views/TeamsView.vue"),
+      },
+      {
+        path: "flows",
+        name: "flows",
+        component: () => import("../views/FlowsView.vue"),
+      },
+      {
+        path: "tickets",
+        name: "tickets",
+        component: () => import("../views/TicketsView.vue"),
+      },
+      {
+        path: "profile",
+        name: "profile",
+        component: ProfileView,
+      },
+      {
+        path: "team-invitations",
+        name: "team-invitations",
+        component: () => import("../views/TeamInvitationsView.vue"),
+      },
+    ],
   },
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(process.env.BASE_URL),
   routes,
 });
 
@@ -105,16 +77,11 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const isLoggedIn = store.state.isLoggedIn;
-  const authRequiredRoutes = [
-    "profile",
-    "dashboard",
-    "settings",
-    "userActivity",
-  ]; // Protected routes
+  const publicRoutes = ["login", "register"]; // Public routes that don't require authentication
 
   if (to.name === "login" && isLoggedIn) {
-    next({ name: "home" }); // Redirect logged-in users away from login page
-  } else if (authRequiredRoutes.includes(to.name) && !isLoggedIn) {
+    next({ name: "dashboard-home" }); // Redirect logged-in users to dashboard
+  } else if (!publicRoutes.includes(to.name) && !isLoggedIn) {
     next({ name: "login" }); // Redirect unauthorized users to login
   } else {
     next(); // Allow access

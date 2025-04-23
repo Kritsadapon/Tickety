@@ -94,71 +94,94 @@ export default {
 <style scoped>
 .register-container {
   max-width: 400px;
-  margin: auto;
-  padding: 25px;
+  margin: 40px auto;
+  padding: 40px;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #ffffff;
   text-align: center;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+form > div {
+  margin-bottom: 20px;
 }
 
 label {
   display: block;
-  margin-top: 12px;
-  font-weight: bold;
+  color: #b3b3b3;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
 }
 
 input {
   width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+  padding: 12px;
+  border: 1px solid #404040;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007bff;
 }
 
 button {
-  margin-top: 20px;
-  padding: 12px;
   width: 100%;
-  background: #18c6c6;
-  color: white;
+  padding: 12px;
+  background: #007bff;
+  color: #ffffff;
   border: none;
-  border-radius: 6px;
-  font-size: 18px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
 }
 
 button:hover {
-  background: #14a6a6;
+  background: #0056b3;
+  transform: translateY(-2px);
 }
 
 button:disabled {
-  background: #cccccc;
+  background: #404040;
   cursor: not-allowed;
+  transform: none;
 }
 
 .error {
-  color: red;
-  margin-top: 10px;
-  font-weight: bold;
+  color: #f44336;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .success {
-  color: green;
-  margin-top: 10px;
-  font-weight: bold;
+  color: #4caf50;
+  text-align: center;
+  margin: 20px 0;
 }
 
 .signin-text {
+  text-align: center;
   margin-top: 20px;
-  font-size: 14px;
+  color: #b3b3b3;
 }
 
 .signin-text a {
-  color: #18c6c6;
+  color: #007bff;
   text-decoration: none;
+  font-weight: 600;
 }
 
 .signin-text a:hover {

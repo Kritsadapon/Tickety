@@ -1,352 +1,296 @@
 <template>
   <div class="home">
-    <div class="header-section">
-      <h1>Welcome to Unitalk</h1>
-      <p class="subtitle">
-        Join the conversation in our vibrant community forums
-      </p>
-      <router-link to="/forums/create" class="create-button">
-        <span class="material-icons">add</span>
-        Create New Forum
-      </router-link>
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1>Welcome to Tickety</h1>
+        <p class="subtitle">
+          Streamline your team's workflow with our powerful ticket management
+          system
+        </p>
+        <div class="cta-buttons">
+          <router-link to="/login" class="primary-button">
+            <font-awesome-icon :icon="['fas', 'sign-in-alt']" />
+            Get Started
+          </router-link>
+          <router-link to="/register" class="secondary-button">
+            <font-awesome-icon :icon="['fas', 'user-plus']" />
+            Create Account
+          </router-link>
+        </div>
+      </div>
     </div>
 
-    <div class="forum-section">
-      <div class="forum-header">
-        <h2>Forums</h2>
-        <div class="filter-container" ref="dropdownRef">
-          <button @click="toggleDropdown" class="filter-btn">Filter</button>
-          <div v-if="showDropdown" class="dropdown">
-            <div
-              v-for="option in filterOptions"
-              :key="option.value"
-              @click="applyFilter(option.value)"
-              class="dropdown-item"
-            >
-              {{ option.label }}
-            </div>
+    <div class="features-section">
+      <h2>Key Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <font-awesome-icon :icon="['fas', 'ticket-alt']" />
           </div>
+          <h3>Ticket Management</h3>
+          <p>
+            Create, track, and manage tickets with ease. Keep your team
+            organized and on track.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <font-awesome-icon :icon="['fas', 'users']" />
+          </div>
+          <h3>Team Collaboration</h3>
+          <p>
+            Work together seamlessly with team-based ticket assignments and
+            real-time updates.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <font-awesome-icon :icon="['fas', 'project-diagram']" />
+          </div>
+          <h3>Custom Workflows</h3>
+          <p>
+            Design and implement custom workflows that match your team's unique
+            processes.
+          </p>
         </div>
       </div>
+    </div>
 
-      <div v-if="forums.length > 0" class="forum-grid">
-        <div
-          class="forum-card"
-          v-for="forum in forums"
-          :key="forum.forumid"
-          @click="goToForum(forum.forumid)"
-        >
-          <div class="forum-content">
-            <h3>{{ forum.forumTitle }}</h3>
-            <p class="description">{{ forum.forumDescription }}</p>
-            <div class="forum-meta">
-              <span class="date">
-                <span class="material-icons">schedule</span>
-                {{ formatDate(forum.forumDateTime) }}
-              </span>
-              <span class="creator">
-                <span class="material-icons">person</span>
-                {{ forum.user?.username || "Anonymous" }}
-              </span>
-              <span class="followers">
-                <span class="material-icons">group</span>
-                {{ forum.followerCount }} Followers
-              </span>
-            </div>
-          </div>
+    <div class="benefits-section">
+      <h2>Why Choose Tickety?</h2>
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <font-awesome-icon :icon="['fas', 'bolt']" />
+          <h3>Fast & Efficient</h3>
+          <p>
+            Streamline your workflow and boost productivity with our intuitive
+            interface.
+          </p>
         </div>
-      </div>
-
-      <div v-else class="empty-state">
-        <span class="material-icons">forum</span>
-        <h3>No Forums Yet</h3>
-        <p>Be the first to create a forum and start the conversation!</p>
-        <router-link to="/forums/create" class="create-button"
-          >Create Your First Forum</router-link
-        >
+        <div class="benefit-item">
+          <font-awesome-icon :icon="['fas', 'shield-alt']" />
+          <h3>Secure & Reliable</h3>
+          <p>Your data is protected with enterprise-grade security measures.</p>
+        </div>
+        <div class="benefit-item">
+          <font-awesome-icon :icon="['fas', 'chart-line']" />
+          <h3>Track Progress</h3>
+          <p>
+            Monitor team performance and project progress with detailed
+            analytics.
+          </p>
+        </div>
+        <div class="benefit-item">
+          <font-awesome-icon :icon="['fas', 'mobile-alt']" />
+          <h3>Responsive Design</h3>
+          <p>
+            Access your tickets and manage your team from any device, anywhere.
+          </p>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {
+  faTicketAlt,
+  faUsers,
+  faProjectDiagram,
+  faBolt,
+  faShieldAlt,
+  faChartLine,
+  faMobileAlt,
+  faSignInAlt,
+  faUserPlus,
+} from "@fortawesome/free-solid-svg-icons";
 
-const forums = ref([]);
-const router = useRouter();
-const showDropdown = ref(false);
-const sortBy = ref("newest");
-
-// To track dropdown for outside click detection
-const dropdownRef = ref(null);
-
-const filterOptions = [
-  { value: "newest", label: "Newest" },
-  { value: "oldest", label: "Oldest" },
-  { value: "most_followed", label: "Most Followed" },
-  { value: "least_followed", label: "Least Followed" },
-];
-
-const fetchForums = async () => {
-  try {
-    const response = await axios.get(
-      `/api/forums/filter?sortBy=${sortBy.value}`
-    );
-    forums.value = response.data;
-  } catch (error) {
-    console.error("Error fetching forums:", error);
-  }
-};
-
-const applyFilter = (selectedSortBy) => {
-  sortBy.value = selectedSortBy;
-  showDropdown.value = false;
-  fetchForums();
-};
-
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value;
-};
-
-const closeDropdown = (event) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-    showDropdown.value = false;
-  }
-};
-
-onMounted(() => {
-  fetchForums();
-  document.addEventListener("click", closeDropdown);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", closeDropdown);
-});
-
-const goToForum = (forumId) => {
-  router.push(`/forums/${forumId}`);
-};
-
-const formatDate = (dateString) => {
-  if (!dateString) return "Unknown date";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
-onMounted(fetchForums);
+library.add(
+  faTicketAlt,
+  faUsers,
+  faProjectDiagram,
+  faBolt,
+  faShieldAlt,
+  faChartLine,
+  faMobileAlt,
+  faSignInAlt,
+  faUserPlus
+);
 </script>
 
 <style scoped>
 .home {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0 20px;
 }
 
-.header-section {
+.hero-section {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  margin-bottom: 40px;
-  padding: 40px 20px;
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   border-radius: 12px;
-  color: white;
+  margin: 20px 0;
+  padding: 40px 20px;
 }
 
-.header-section h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  color: #18c6c6;
+.hero-content {
+  max-width: 800px;
+}
+
+.hero-section h1 {
+  font-size: 3.5rem;
+  color: #ffffff;
+  margin-bottom: 20px;
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  color: #cccccc;
-  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #b3b3b3;
+  margin-bottom: 40px;
 }
 
-.create-button {
-  display: inline-flex;
+.cta-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.primary-button,
+.secondary-button {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  background: #18c6c6;
-  color: white;
-  padding: 12px 24px;
+  gap: 10px;
+  padding: 15px 30px;
   border-radius: 8px;
-  text-decoration: none;
+  font-size: 1.1rem;
   font-weight: 600;
+  text-decoration: none;
   transition: all 0.3s ease;
 }
 
-.create-button:hover {
-  background: #15b3b3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(24, 198, 198, 0.2);
+.primary-button {
+  background-color: #007bff;
+  color: #ffffff;
 }
 
-.forum-section {
+.primary-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.secondary-button {
+  background-color: #404040;
+  color: #ffffff;
+}
+
+.secondary-button:hover {
+  background-color: #505050;
+  transform: translateY(-2px);
+}
+
+.features-section,
+.benefits-section {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.features-section h2,
+.benefits-section h2 {
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 40px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
   margin-top: 40px;
 }
 
-.forum-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.feature-card {
+  background-color: #2d2d2d;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #404040;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  color: #007bff;
   margin-bottom: 20px;
 }
 
-.forum-header h2 {
-  font-size: 1.8rem;
-  color: #333;
+.feature-card h3 {
+  color: #ffffff;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
 }
 
-.filter-container {
-  position: relative;
+.feature-card p {
+  color: #b3b3b3;
+  line-height: 1.6;
 }
 
-.filter-btn {
-  padding: 10px 15px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.dropdown {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  width: 150px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-.dropdown-item {
-  padding: 10px;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background-color: #f1f1f1;
-}
-
-.forum-grid {
+.benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
 }
 
-.forum-card {
-  background: white;
+.benefit-item {
+  background-color: #2d2d2d;
+  padding: 30px;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 1px solid #ccc;
+  border: 1px solid #404040;
 }
 
-.forum-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+.benefit-item .fa-icon {
+  font-size: 2rem;
+  color: #007bff;
+  margin-bottom: 20px;
 }
 
-.forum-content {
-  padding: 20px;
+.benefit-item h3 {
+  color: #ffffff;
+  font-size: 1.3rem;
+  margin-bottom: 15px;
 }
 
-.forum-content h3 {
-  font-size: 1.4rem;
-  color: #333;
-  margin-bottom: 12px;
-}
-
-.description {
-  color: #666;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 16px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.forum-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 0.9rem;
-  color: #888;
-}
-
-.forum-meta span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.forum-meta .material-icons {
-  font-size: 1.1rem;
-}
-
-.followers {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  margin-top: 20px;
-}
-
-.empty-state .material-icons {
-  font-size: 4rem;
-  color: #18c6c6;
-  margin-bottom: 16px;
-}
-
-.empty-state h3 {
-  font-size: 1.8rem;
-  color: #333;
-  margin-bottom: 12px;
-}
-
-.empty-state p {
-  color: #666;
-  margin-bottom: 24px;
+.benefit-item p {
+  color: #b3b3b3;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
-  .home {
-    padding: 16px;
+  .hero-section h1 {
+    font-size: 2.5rem;
   }
 
-  .header-section {
-    padding: 30px 16px;
+  .subtitle {
+    font-size: 1.2rem;
   }
 
-  .header-section h1 {
-    font-size: 2rem;
+  .cta-buttons {
+    flex-direction: column;
   }
 
-  .forum-grid {
-    grid-template-columns: 1fr;
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

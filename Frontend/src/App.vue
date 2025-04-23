@@ -2,80 +2,97 @@
   <div id="app">
     <header>
       <div class="header-content">
-        <router-link to="/">
-          <img src="/Unitalk_Logo%20copy.png" alt="Unitalk Logo" class="logo" />
-          <img src="/Unitalk_Name%20copy.png" alt="Unitalk Name" class="name" />
+        <router-link to="/" class="logo-link">
+          <span class="logo-text">Tickety</span>
         </router-link>
 
-        <div class="search-container">
-          <input
-            type="text"
-            v-model="searchKeyword"
-            @keyup.enter="performSearch"
-            :placeholder="
-              isForumPageView ? 'Search posts...' : 'Search forums...'
-            "
-            class="search-input"
-          />
-        </div>
+        <nav class="main-nav" v-if="isLoggedIn">
+          <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+          <router-link to="/dashboard/tickets" class="nav-link"
+            >Tickets</router-link
+          >
+          <router-link to="/dashboard/teams" class="nav-link"
+            >Teams</router-link
+          >
+          <router-link to="/dashboard/flows" class="nav-link"
+            >Workflows</router-link
+          >
+        </nav>
       </div>
 
-      <div class="auth-button">
+      <div class="auth-section">
         <template v-if="isLoggedIn">
           <div class="user-info">
-            <span class="display-name">{{ displayName }}</span>
-            <button
-              @click="toggleProfileDropdown"
-              class="profile-btn"
-              ref="profileButton"
-            >
+            <div class="user-dropdown" @click="toggleProfileDropdown">
               <img
                 v-if="profilePictureUrl"
                 :src="profilePictureUrl"
                 alt="Profile"
                 class="profile-image"
               />
-              <span v-else class="material-icons profile-icon"
-                >account_circle</span
-              >
-            </button>
+              <span v-else class="profile-placeholder">
+                {{ displayName.charAt(0).toUpperCase() }}
+              </span>
+              <span class="user-name">{{ displayName }}</span>
+            </div>
 
-            <div
-              v-if="profileDropdownVisible"
-              class="profile-dropdown"
-              ref="profileDropdown"
-            >
-              <router-link to="/profile" class="dropdown-item"
-                >Profile</router-link
+            <div v-if="profileDropdownVisible" class="profile-dropdown">
+              <router-link to="/dashboard/profile" class="dropdown-item">
+                <font-awesome-icon :icon="['fas', 'user']" />
+                Profile
+              </router-link>
+              <router-link
+                to="/dashboard/team-invitations"
+                class="dropdown-item"
               >
-              <button @click="logout" class="dropdown-item">Logout</button>
+                <font-awesome-icon :icon="['fas', 'envelope']" />
+                Team Invitations
+              </router-link>
+              <button @click="logout" class="dropdown-item">
+                <font-awesome-icon :icon="['fas', 'sign-out-alt']" />
+                Logout
+              </button>
             </div>
           </div>
         </template>
 
         <template v-else>
-          <router-link to="/login" class="sign-in">
-            <span class="material-icons">login</span> Sign In
+          <router-link to="/login" class="auth-button">
+            <font-awesome-icon :icon="['fas', 'sign-in-alt']" />
+            Sign In
           </router-link>
         </template>
       </div>
     </header>
 
-    <router-view />
+    <main>
+      <router-view />
+    </main>
   </div>
 </template>
 
 <script>
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {
+  faUser,
+  faEnvelope,
+  faSignOutAlt,
+  faSignInAlt,
+} from "@fortawesome/free-solid-svg-icons";
+
+library.add(faUser, faEnvelope, faSignOutAlt, faSignInAlt);
+
 export default {
+  components: {
+    FontAwesomeIcon,
+  },
   computed: {
     isLoggedIn() {
       return this.$store.state.isLoggedIn;
     },
     displayName() {
       return this.$store.state.name;
-    },
-    isForumPageView() {
-      return this.$route.path.startsWith("/forums/");
     },
     profilePictureUrl() {
       return this.$store.state.profilePictureUrl;
@@ -84,36 +101,7 @@ export default {
   data() {
     return {
       profileDropdownVisible: false,
-      searchKeyword: "",
-      profilePictureLoaded: false,
     };
-  },
-  watch: {
-    isLoggedIn: {
-      immediate: true,
-      async handler(newValue) {
-        if (newValue) {
-          await this.fetchProfilePicture();
-        }
-      },
-    },
-    $route: {
-      immediate: true,
-      async handler() {
-        if (this.isLoggedIn) {
-          await this.fetchProfilePicture();
-        }
-      },
-    },
-    "$route.query.keyword": {
-      immediate: true,
-      handler(newKeyword) {
-        if (newKeyword) {
-          this.searchKeyword = newKeyword;
-          this.performSearch();
-        }
-      },
-    },
   },
   methods: {
     toggleProfileDropdown() {
@@ -124,58 +112,18 @@ export default {
     },
     handleClickOutside(event) {
       const dropdown = this.$refs.profileDropdown;
-      const button = this.$refs.profileButton;
-      if (
-        dropdown &&
-        !dropdown.contains(event.target) &&
-        !button.contains(event.target)
-      ) {
+      if (dropdown && !dropdown.contains(event.target)) {
         this.closeProfileDropdown();
       }
     },
     logout() {
       this.$store.dispatch("logout").then(() => {
-        this.$router.push("/");
+        this.$router.push("/login");
       });
-    },
-    performSearch() {
-      if (this.searchKeyword.trim()) {
-        const query = { keyword: this.searchKeyword.trim() };
-        if (this.isForumPageView) {
-          const forumId = this.$route.params.forumid;
-          this.$router.push({
-            path: `/forums/${forumId}/search`,
-            query,
-          });
-        } else {
-          this.$router.push({
-            path: "/search",
-            query,
-          });
-        }
-      }
-    },
-    async fetchProfilePicture() {
-      if (this.isLoggedIn) {
-        try {
-          const response = await this.$axios.get("/api/users/profile-picture", {
-            responseType: "blob",
-          });
-          const blob = new Blob([response.data], { type: "image/jpeg" });
-          const url = URL.createObjectURL(blob);
-          this.$store.commit("setProfilePictureUrl", url);
-        } catch (error) {
-          console.error("Failed to fetch profile picture", error);
-          this.$store.commit("setProfilePictureUrl", "/default-avatar.svg");
-        }
-      }
     },
   },
   mounted() {
     document.addEventListener("click", this.handleClickOutside);
-    if (this.isLoggedIn) {
-      this.fetchProfilePicture();
-    }
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
@@ -185,136 +133,153 @@ export default {
 
 <style scoped>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header {
+  background-color: #2d2d2d;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background-color: rgba(24, 198, 198, 0.94);
+  border-bottom: 1px solid #404040;
 }
 
 .header-content {
   display: flex;
   align-items: center;
+  gap: 2rem;
 }
 
-.logo {
-  height: 50px;
-  margin-right: 10px;
+.logo-link {
+  text-decoration: none;
+  color: #ffffff;
 }
 
-.name {
-  height: 30px;
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff;
 }
 
-.search-container {
-  margin-left: 30px;
+.main-nav {
+  display: flex;
+  gap: 1.5rem;
 }
 
-.search-input {
-  padding: 8px 12px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: none;
-  outline: none;
+.nav-link {
+  color: #b3b3b3;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.router-link-active {
+  color: #ffffff;
+  background-color: #404040;
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
 }
 
 .auth-button {
   display: flex;
   align-items: center;
-}
-
-.sign-in {
-  display: flex;
-  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
   text-decoration: none;
-  font-weight: bold;
-  color: white;
-  background-color: #2c3e50;
-  padding: 10px 15px;
-  border-radius: 5px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
-.sign-in:hover {
-  background-color: #1a252f;
-}
-
-.sign-in .material-icons {
-  margin-right: 5px;
+.auth-button:hover {
+  background-color: #0056b3;
 }
 
 .user-info {
   position: relative;
+}
+
+.user-dropdown {
   display: flex;
   align-items: center;
-}
-
-.display-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: white;
-  margin-right: 1px;
-}
-
-.profile-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 18px;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 6px;
   cursor: pointer;
-  margin-right: 20px;
+  transition: background-color 0.3s ease;
 }
 
-.profile-icon {
-  font-size: 35px;
-}
-
-.profile-dropdown {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  background-color: white;
-  color: #2c3e50;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-width: 120px;
-  z-index: 1000;
-}
-
-.dropdown-item {
-  display: block;
-  padding: 10px;
-  text-decoration: none;
-  color: inherit;
-  text-align: left;
-  background-color: white;
-  transition: background-color 0.3s;
-}
-
-.dropdown-item:hover {
-  background-color: rgba(24, 198, 198, 0.94);
-  color: white;
+.user-dropdown:hover {
+  background-color: #404040;
 }
 
 .profile-image {
-  width: 35px;
-  height: 35px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.profile-btn:hover {
-  background-color: rgba(24, 198, 198, 0.94);
-  color: white;
+.profile-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
 }
 
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+.user-name {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 6px;
+  padding: 0.5rem;
+  min-width: 200px;
+  margin-top: 0.5rem;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #b3b3b3;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #404040;
+  color: #ffffff;
+}
+
+main {
+  flex: 1;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
 </style>
